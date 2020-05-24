@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 配置SpringMVC-->
+    <!-- 1:开启SpringMVC注解模式-->
+    <!-- 简化配置
+            (1)自动注册DefaultAnnotationHandlerMapping，AnnotationMethodHandlerAdapter
+            (2)提供一系列:数据绑定，数字和日期的format @NumberFormat，@DataTimeFormat，
+                xml,json默认读写支持.
+     -->
+    <mvc:annotation-driven/>
+
+    <!-- 2:servlet-mapping 映射:"/"-->
+    <!-- 静态资源默认servlet配置
+          1:加入对静态资源处理:js,gif,png
+          2:允许使用"/"做整体映射
+    -->
+    <mvc:default-servlet-handler/>
+
+    <!-- 3:配置thymeleaf 显示ViewResolver
+      注意:
+          templateResolver的prefix与suffix对应你的视图层的文件位置
+          templateResolver的characterEncoding和viewResolver的都要设置成UTF-8中文才不会乱码。
+          templateResolver的cacheable一定要在开发的时候设置成false不然无法看到实时的页面数据
+    -->
+    <bean id="templateResolver"
+          class="org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver">
+        <property name="prefix" value="/WEB-INF/templates/"/>
+        <property name="suffix" value=".html"/>
+        <property name="characterEncoding" value="UTF-8"/>
+        <property name="order" value="1"/>
+        <property name="templateMode" value="HTML5"/>
+        <property name="cacheable" value="false"/>
+    </bean>
+
+    <bean id="templateEngine"
+          class="org.thymeleaf.spring5.SpringTemplateEngine">
+        <property name="templateResolver" ref="templateResolver"/>
+    </bean>
+
+    <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
+        <property name="templateEngine" ref="templateEngine"/>
+        <property name="characterEncoding" value="UTF-8"/>
+    </bean>
+
+
+    <!-- 4:扫描web相关的bean-->
+    <context:component-scan base-package="com.lt" use-default-filters="false">
+        <!--只扫描控制器-->
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 配置Spring MVC的拦截器 -->
+    <mvc:interceptors>
+        <!-- 只针对部分请求拦截 -->
+        <mvc:interceptor>
+            <mvc:mapping path="/admin/**"/>
+            <mvc:exclude-mapping path="/admin/v1/login"/>
+            <mvc:exclude-mapping path="/admin/v1/reload"/>
+            <!--            <mvc:exclude-mapping path="/admin/dist/**"/>-->
+            <!--            <mvc:exclude-mapping path="/admin/plugins/**"/>-->
+            <!--            <mvc:exclude-mapping path="/X-admin/**"/>-->
+            <!-- 配置一个拦截器的Bean就可以了 默认是对所有请求都拦截 -->
+            <bean id="myInterceptor" class="com.lt.blog.interceptor.AdminLoginInterceptor"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="utf-8"/>
+        <property name="maxUploadSize" value="#{1024*1024}"/>
+    </bean>
+
+
+    <!--5: 配置允许放行的静态资源-->
+    <mvc:resources mapping="/static/**" location="/static/"/>
+    <mvc:resources mapping="/authorImg/**" location="file:${upload.uploadAutherImg}"/>
+    <mvc:resources mapping="/upload/**" location="file:${upload.fileUploadDic}"/>
+</beans>
