@@ -76,6 +76,6 @@
 
     <!--5: 配置允许放行的静态资源-->
     <mvc:resources mapping="/static/**" location="/static/"/>
-    <mvc:resources mapping="/authorImg/**" location="file:${upload.uploadAutherImg}"/>
+    <mvc:resources mapping="/authorImg/**" location="file:${upload.uploadAuthorImg}"/>
     <mvc:resources mapping="/upload/**" location="file:${upload.fileUploadDic}"/>
 </beans>
