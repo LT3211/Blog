@@ -77,6 +77,7 @@ public class MyBlogController {
      */
     @GetMapping({"/page/{pageNum}"})
     public String page(HttpServletRequest request, @PathVariable("pageNum") int pageNum) {
+        //传入当前页和每页个数
         Page<TbBlogInfo> page = new Page<TbBlogInfo>(pageNum, 8);
         blogInfoService.page(page, new QueryWrapper<TbBlogInfo>()
                 .lambda()
